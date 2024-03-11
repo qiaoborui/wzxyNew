@@ -1,43 +1,39 @@
-name: Build and Push Docker Images
+name: Docker Image CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [ "main" ]
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
-      
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-      
-    - name: Login to Docker Hub
-      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-      
-    - name: Build and push
-      id: buildx
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        file: ./Dockerfile
-        platforms: linux/amd64,linux/arm64,linux/arm/v7
-        push: true
-        tags: |
-          qiaoborui/wzxynew:latest
-          qiaoborui/wzxynew:$(date +%Y-%m-%d)
 
-    - name: Set output
-      run: echo "::set-output name=image_digest::$(echo ${{ steps.buildx.outputs.digest }} | cut -d ':' -f 2)"
-      id: output
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    # Step to install Python dependencies
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'  # Choose the version you want
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        # Replace 'requirements.txt' with the name of your requirements file
+
+    # Step to build the Docker image
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+    # Step to login to Docker Hub
+    - name: Login to Docker Hub
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+    # Step to push the Docker image to Docker Hub
+    - name: Push Docker image
+      run: docker push qiaoborui/wzxynew:$(date +%s)

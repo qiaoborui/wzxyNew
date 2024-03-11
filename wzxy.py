@@ -9,8 +9,22 @@ import toml
 from croniter import croniter
 import time
 
-logging.basicConfig(level=logging.INFO)
+# Create a logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
+# Create handlers
+file_handler = logging.FileHandler('wozaixiaoyuan.log')
+console_handler = logging.StreamHandler()
+
+# Create formatters and add them to the handlers
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+# Add handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 class User:
     def __init__(self, username, password, school_id):
         self.username = username
@@ -201,7 +215,7 @@ def run_users():
 
 if __name__ == "__main__":
     # Define your cron expression here
-    cron_expression = "* * * * *"  # Runs at 1:00 AM every day
+    cron_expression = "*/5 22 * * *"  # Runs at 1:00 AM every day
 
     # Create a cron iterator
     cron = croniter(cron_expression)

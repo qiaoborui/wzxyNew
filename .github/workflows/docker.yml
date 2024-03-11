@@ -35,8 +35,8 @@ jobs:
         platforms: linux/amd64,linux/arm64,linux/arm/v7
         push: true
         tags: |
-          yourusername/yourrepository:latest
-          yourusername/yourrepository:$(date +%Y-%m-%d)
+          qiaoborui/wzxyNew:latest
+          qiaoborui/wzxyNew:$(date +%Y-%m-%d)
 
     - name: Set output
       run: echo "::set-output name=image_digest::$(echo ${{ steps.buildx.outputs.digest }} | cut -d ':' -f 2)"

@@ -174,7 +174,7 @@ class User:
             headers = {'Host': "gw.wozaixiaoyuan.com", 'Cookie': self.cookie}
             id_ = sign.get('id')
             sign_id = sign.get('signId')
-            url = f"https://gw.wozaixiaoyuan.com/sign/mobile/receive/doSignByArea?id={id_}&schoolId=19&signId={sign_id}"
+            url = f"https://gw.wozaixiaoyuan.com/sign/mobile/receive/doSignByArea?id={id_}&schoolId={self.school_id}&signId={sign_id}"
             res = requests.post(url, headers=headers, data=check_in_data)
             text = json.loads(res.text)
             if text['code'] == 0:

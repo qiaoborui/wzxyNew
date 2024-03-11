@@ -15,17 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    # Step to install Python dependencies
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'  # Choose the version you want
-
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        # Replace 'requirements.txt' with the name of your requirements file
-
     # Step to build the Docker image
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)

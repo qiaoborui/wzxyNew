@@ -126,7 +126,7 @@ class User:
 
         if 'code' in data and data['code'] == 0 and 'data' in data:
             for item in data['data']:
-                if item.get('type') ==  1 and item.get('signStatus') == 0:
+                if item.get('type') ==  0 and item.get('signStatus') == 1:
                     sign_info = {'signId': item.get('signId'), 'id': item.get('id'),'userArea':item.get('userArea'),'areaList':item.get('areaList')}
                     self.sign_data.append(sign_info)
             logging.info("Sign-in list retrieved successfully!")
@@ -191,8 +191,13 @@ def run_users():
         if i != 0:
             print("-" * 50)  # Separator between different users
         logging.info(f"Running user {user_data.get('name')}...")
-        u = User(user_data.get('username'), user_data.get('password'), user_data.get('school_id'))
-        u.night_sign()
+        try:
+            u = User(user_data.get('username'), user_data.get('password'), user_data.get('school_id'))
+            u.night_sign()
+        except Exception as e:
+            logging.error(f"An error occurred while running user {user_data.get('name')}: {str(e)}")
+        if i == len(data) - 1:
+            print("-" * 50)
 
 if __name__ == "__main__":
     # Define your cron expression here

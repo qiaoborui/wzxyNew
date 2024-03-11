@@ -54,5 +54,5 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           # 给清单打上多个标签
           tags: |
-            qiaoborui/wzxyNew:${{ steps.date.outputs.today }}
-            qiaoborui/wzxyNew:latest
+            qiaoborui/wzxynew:${{ steps.date.outputs.today }}
+            qiaoborui/wzxynew:latest

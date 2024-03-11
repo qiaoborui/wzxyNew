@@ -18,6 +18,11 @@ school_id = "学校编号"
 - school_id：学校的编号。
 请按照上述格式填写并保存为 config.ini 文件。
 
+#### 1.1 学校编号
+
+https://gw.wozaixiaoyuan.com/basicinfo/mobile/login/getSchoolList 
+访问上述链接，获取学校编号。
+
 ### 2. 运行程序
 确保已经安装了所需的依赖，可以通过 pip install -r requirements.txt 安装。
 在终端中运行 python main.py 命令来启动程序。

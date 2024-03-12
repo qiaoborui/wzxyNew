@@ -202,7 +202,10 @@ class User:
 def runUsers():
     with open('users.toml', 'r') as file:
         data = toml.load(file)['user']
-
+    
+    # show the count of users
+    logging.info(f"Running {len(data)} user(s)...")
+    
     for i, userData in enumerate(data):
         if i != 0:
             print("-" * 50)  # Separator between different users
@@ -222,6 +225,9 @@ if __name__ == "__main__":
 
     # Create a cron iterator
     cron = croniter(cronExpression)
+
+    # Log the welcome message
+    logging.info("Welcome to Wozaixiaoyuan Night Sign-in Script!")
 
     # Infinite loop to check if it's time to execute the task
     while True:

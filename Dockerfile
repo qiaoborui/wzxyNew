@@ -1,6 +1,12 @@
 # Use an official Python runtime as a parent image
 FROM python:3
 
+ENV TZ=Asia/Shanghai
+
+RUN apt-get update && apt-get install tzdata -y
+
+RUN ln -snf /usr/share/ zoneinfo/$TZ /etc/localtime && echo > /etc/timezone
+
 # Set the working directory in the container
 WORKDIR /usr/src/app
 

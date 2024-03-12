@@ -58,7 +58,7 @@ jobs:
             qiaoborui/wzxynew:latest
       
       - name: Deploy to Server
-        uses: appleboy/ssh-action@
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}

@@ -1,9 +1,9 @@
 # Use an official Python runtime as a parent image
-FROM python:3
+FROM python:3.9-alpine
 
 ENV TZ=Asia/Shanghai
 
-RUN apt-get update && apt-get install tzdata -y
+RUN apk update && apk add tzdata
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo > /etc/timezone
 

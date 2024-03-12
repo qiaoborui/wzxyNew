@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get current date
         id: date
@@ -56,3 +56,16 @@ jobs:
           tags: |
             qiaoborui/wzxynew:${{ steps.date.outputs.today }}
             qiaoborui/wzxynew:latest
+      
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            docker pull qiaoborui/wzxynew:latest
+            docker stop wzxynew
+            docker rm wzxynew
+            docker run -itd --name wzxynew -v ${{ secrets.WZXYNEW_CONFIG }}:/usr/src/app/users.toml qiaoborui/wzxynew:latest

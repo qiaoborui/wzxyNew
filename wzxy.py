@@ -202,6 +202,7 @@ class User:
                 logging.info(f"{sign.get('userArea')} sign-in successful!")
             else:
                 logging.error(f"{sign.get('userArea')} sign-in failed!")
+            logging.debug(f"Response: {text}")
 
 
 def run_users():

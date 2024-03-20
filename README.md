@@ -6,6 +6,15 @@
 在使用之前，需要先创建一个配置文件，格式如下：
 
 ```toml
+[[cron]]
+expression = "0 22 * * *"
+
+[[user]]
+name = "姓名"
+username = "用户名"
+password = "密码"
+school_id = "学校编号"
+
 [[user]]
 name = "姓名"
 username = "用户名"
@@ -17,6 +26,7 @@ school_id = "学校编号"
 - password：登录校园晚签系统所用的密码。
 - school_id：学校的编号。
 请按照上述格式填写并保存为 config.ini 文件。
+支持多用户使用，只需在配置文件中添加多个用户即可。
 
 #### 1.1 学校编号
 
@@ -25,9 +35,16 @@ https://gw.wozaixiaoyuan.com/basicinfo/mobile/login/getSchoolList
 
 ### 2. 运行程序
 确保已经安装了所需的依赖，可以通过 pip install -r requirements.txt 安装。
-在终端中运行 python main.py 命令来启动程序。
+在终端中运行 python wzxy.py 命令来启动程序。
 程序将读取配置文件中的信息，并自动完成晚签到流程。
-
+#### 2.1 调试模式
+在调试模式下，程序将会输出更多的信息，以便于调试。
+```shell
+export ENV=DEV
+```
+```shell
+python wzxy.py
+```
 ### 3.Docker
 ```shell
 docker pull qiaoborui/wzxynew:latest

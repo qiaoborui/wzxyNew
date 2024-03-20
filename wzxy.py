@@ -206,7 +206,13 @@ class User:
 
 
 def run_users():
-    with open('users.toml', 'r') as file:
+    """
+    Runs the night sign-in for multiple users.
+
+    Returns:
+        None
+    """
+    with open('config.toml', 'r') as file:
         data = toml.load(file)['user']
 
     for i, user_data in enumerate(data):
@@ -232,8 +238,14 @@ if __name__ == "__main__":
         run_users()
         exit(0)
 
-    # Define your cron expression here
-    cronExpression = "*/5 22 * * *"  # Run the script every day at 22:00
+    # Read cron expression from configuration file
+    with open('config.toml', 'r') as file:
+        config = toml.load(file)
+    try:
+        cronExpression = config['cron'][0].get('expression')
+    except KeyError:
+        logging.error("Cron expression not found in configuration file!")
+        exit(1)
 
     now = datetime.now().replace(tzinfo=tz.gettz()) 
 

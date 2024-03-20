@@ -25,7 +25,7 @@ school_id = "学校编号"
 - username：登录校园晚签系统所用的用户名。
 - password：登录校园晚签系统所用的密码。
 - school_id：学校的编号。
-请按照上述格式填写并保存为 config.ini 文件。
+请按照上述格式填写并保存为 config.toml 文件。
 支持多用户使用，只需在配置文件中添加多个用户即可。
 
 #### 1.1 学校编号
@@ -50,7 +50,7 @@ python wzxy.py
 docker pull qiaoborui/wzxynew:latest
 ```
 ```shell
-docker run -itd -v /your/path/users.toml:/usr/src/app/users.toml --name wzxynew qiaoborui/wzxynew:latest
+docker run -itd -v /your/path/config.toml:/usr/src/app/config.toml --name wzxynew qiaoborui/wzxynew:latest
 ```
 将 /your/path/users.toml 替换为你的配置文件路径。
 #### 3.1 查看日志

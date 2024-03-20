@@ -68,4 +68,4 @@ jobs:
             docker pull qiaoborui/wzxynew:latest
             docker stop wzxynew
             docker rm wzxynew
-            docker run -itd --name wzxynew -v ${{ secrets.WZXYNEW_CONFIG }}:/usr/src/app/users.toml qiaoborui/wzxynew:latest
+            docker run -itd --name wzxynew -v ${{ secrets.WZXYNEW_CONFIG }}:/usr/src/app/config.toml qiaoborui/wzxynew:latest

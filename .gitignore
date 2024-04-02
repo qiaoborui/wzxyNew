@@ -3,3 +3,5 @@ users_jws.json
 *.log
 .idea
 config.toml
+.DS_Store
+__pycache__

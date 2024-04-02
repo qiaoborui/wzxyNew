@@ -12,6 +12,8 @@ from croniter import croniter
 import time
 import os
 from dateutil import tz
+import signBuilder
+from config import Config
 
 # Create a logger
 logger = logging.getLogger()
@@ -145,63 +147,34 @@ class User:
         data = json.loads(res.text)
 
         if 'code' in data and data['code'] == 0 and 'data' in data:
-            for item in data['data']:
-                if item.get('type') ==  0 and item.get('signStatus') == 1:
-                    sign_info = {'signId': item.get('signId'), 'id': item.get('id'),'userArea':item.get('userArea'),'areaList':item.get('areaList')}
-                    self.sign_data.append(sign_info)
+            sign_info = signBuilder.filterSignList(data['data']) 
+            logging.debug(sign_info)   
+            self.sign_data =  sign_info
             logging.info("Sign-in list retrieved successfully!")
         else:
             logging.error("Failed to retrieve sign-in list!")
 
-    def generate_check_in_request(self, area_list, user_area):
-        check_in_data = {}
-        area_json_data = self.find_area_json(area_list, user_area)
-        if area_json_data:
-            area_json, latitude, longitude = area_json_data
-            check_in_data = {
-                "latitude": float(latitude),
-                "longitude": float(longitude),
-                "nationcode": "156",
-                "country": "China",
-                "areaJSON": area_json,
-                "inArea": 1
-            }
-        return json.dumps(check_in_data)
-
-    def find_area_json(self, area_list, user_area):
-        for area in area_list:
-            if area.get('name') == user_area:
-                area_json = {
-                    "type": 0,
-                    "circle": {
-                        "latitude": area.get('latitude'),
-                        "longitude": area.get('longitude'),
-                        "radius": area.get('radius')
-                    },
-                    "id": area.get('id'),
-                    "name": area.get('name')
-                }
-                return (json.dumps(area_json), area.get('latitude'), area.get('longitude'))
-        return None
 
     def night_sign(self):
         self.get_sign_list()
-        if (sign_count := len(self.sign_data)) == 0:
+        if len(self.sign_data) == 0:
             logging.info("No sign-in task found!")
             return
-        for sign in self.sign_data:
-            check_in_data = self.generate_check_in_request(sign.get('areaList'), sign.get('userArea'))
+        for i, sign in  enumerate(self.sign_data):
+            logging.debug(f"Sign-in data: {sign}")
+            check_in_data = self.sign_data[i]['signBody']
             logging.debug(f"Check-in data: {check_in_data}")
             headers = {'Host': "gw.wozaixiaoyuan.com", 'Cookie': self.cookie}
             id_ = sign.get('id')
             sign_id = sign.get('signId')
-            url = f"https://gw.wozaixiaoyuan.com/sign/mobile/receive/doSignByArea?id={id_}&schoolId={self.school_id}&signId={sign_id}"
+            url = self.sign_data[i]['signUrl'].format(id_, self.school_id, sign_id)
+            logging.debug(f"Request URL: {url}")
             res = requests.post(url, headers=headers, data=check_in_data)
             text = json.loads(res.text)
             if text['code'] == 0:
-                logging.info(f"{sign.get('userArea')} sign-in successful!")
+                logging.info("sign-in successful!")
             else:
-                logging.error(f"{sign.get('userArea')} sign-in failed!")
+                logging.error("sign-in failed!")
             logging.debug(f"Response: {text}")
 
 
@@ -212,8 +185,8 @@ def run_users():
     Returns:
         None
     """
-    with open('config.toml', 'r') as file:
-        data = toml.load(file)['user']
+    cfg = Config()
+    data = cfg.get_user_data()
 
     for i, user_data in enumerate(data):
         if i != 0:
@@ -239,13 +212,13 @@ if __name__ == "__main__":
         exit(0)
 
     # Read cron expression from configuration file
-    with open('config.toml', 'r') as file:
-        config = toml.load(file)
     try:
-        cronExpression = config['cron'][0].get('expression')
-    except KeyError:
-        logging.error("Cron expression not found in configuration file!")
+        cfg = Config()
+    except ValueError as e:
+        logging.error(str(e))
         exit(1)
+
+    cronExpression = cfg.get_cron_data()
 
     now = datetime.now().replace(tzinfo=tz.gettz()) 
 

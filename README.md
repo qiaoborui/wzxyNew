@@ -20,11 +20,25 @@ name = "姓名"
 username = "用户名"
 password = "密码"
 school_id = "学校编号"
+latitude = "纬度"
+longitude = "经度"
+province = "省份"
+city = "城市"
+area = "区"
+township = "街道"
 ```
 - name：你的姓名。
 - username：登录校园晚签系统所用的用户名。
 - password：登录校园晚签系统所用的密码。
 - school_id：学校的编号。
+
+目前有两种签到模式，分别为位置签到和区域签到。区域签到可以自动根据限制区域填写经纬度，而位置签到需要手动填写经纬度和地址信息。
+- latitude：纬度。
+- longitude：经度。
+- province：省份。
+- city：城市。
+- area：区。
+- township：街道。
 请按照上述格式填写并保存为 config.toml 文件。
 支持多用户使用，只需在配置文件中添加多个用户即可。
 

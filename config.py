@@ -3,12 +3,12 @@
 expression = "*/5 22 * * *"
 [[user]]
 name = "hta"
-username = "17691189313"
-password = "129hta"
+username = "176****9313"
+password = "******"
 school_id = "19"
 sign_mode = 2
-longitude = "108.7511390516493"
-latitude = "34.02010877821181"
+longitude = "108.7511"
+latitude = "34.0201"
 province = "陕西省"
 city = "西安市"
 area = "鄠邑区"

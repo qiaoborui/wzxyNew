@@ -18,8 +18,9 @@ township = "草堂街道"
 
 import toml
 
+
 class Config:
-    def __init__(self, config_file = 'config.toml'):
+    def __init__(self, config_file='config.toml'):
         with open(config_file, 'r') as file:
             self.data = toml.load(file)
         try:
@@ -27,11 +28,11 @@ class Config:
         except KeyError:
             raise ValueError("Cron expression not found in configuration file!")
 
-    def read_config(self):
+    def readConfig(self):
         return self.data
 
-    def get_user_data(self):
+    def getUserData(self):
         return self.data['user']
 
-    def get_cron_data(self):
+    def getCronData(self):
         return self.data['cron'][0]['expression']

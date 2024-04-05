@@ -33,45 +33,67 @@ logger.addHandler(fileHandler)
 logger.addHandler(consoleHandler)
 
 
+def readJWS():
+    try:
+        with open("users_jws.json", 'r') as file:
+            jws_dict = json.load(file)
+            return jws_dict
+    except FileNotFoundError:
+        return {}
+
+
+def writeJWS(jws_dict):
+    try:
+        with open("users_jws.json", 'r') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        data = {}
+
+    data.update(jws_dict)
+
+    with open("users_jws.json", 'w') as file:
+        json.dump(data, file)
+
+
 class User:
-    def __init__(self, username, password, school_id):
+    def __init__(self, username, password, schoolID):
         self.username = username
         self.password = password
-        self.school_id = school_id
-        self.sign_data = []
+        self.schoolID = schoolID
+        self.signData = []
         self.cookie = None
 
         # Try to read JWSESSION from local cache and test login status
-        self.test_cached_session()
+        self.testCachedSession()
 
     def encrypt(self, text):
         key = (str(self.username) + "0000000000000000")[:16]
         cipher = AES.new(key.encode('utf-8'), AES.MODE_ECB)
         padded_text = pad(text.encode('utf-8'), AES.block_size)
-        encrypted_text = cipher.encrypt(padded_text)
-        return b64encode(encrypted_text).decode('utf-8')
+        encryptedText = cipher.encrypt(padded_text)
+        return b64encode(encryptedText).decode('utf-8')
 
     def login(self):
-        encrypted_text = self.encrypt(self.password)
-        login_url = 'https://gw.wozaixiaoyuan.com/basicinfo/mobile/login/username'
+        encryptedText = self.encrypt(self.password)
+        loginUrl = 'https://gw.wozaixiaoyuan.com/basicinfo/mobile/login/username'
         params = {
-            "schoolId": self.school_id,
+            "schoolId": self.schoolID,
             "username": self.username,
-            "password": encrypted_text
+            "password": encryptedText
         }
-        login_req = requests.post(login_url, params=params)
-        text = json.loads(login_req.text)
+        loginReq = requests.post(loginUrl, params=params)
+        text = json.loads(loginReq.text)
         if text['code'] == 0:
-            set_cookie = login_req.headers['Set-Cookie']
+            set_cookie = loginReq.headers['Set-Cookie']
             jws = re.search(r'JWSESSION=.*?;', str(set_cookie)).group(0)
             self.cookie = jws
-            self.write_jws_to_cache({self.username: jws})  # Write obtained JWSESSION to local cache
+            writeJWS({self.username: jws})  # Write obtained JWSESSION to local cache
             return True
         else:
             logging.error(f"{self.username} login error, please check account password!")
             return False
 
-    def test_login_status(self):
+    def testLoginStatus(self):
         if self.cookie:
             headers = {'Host': "gw.wozaixiaoyuan.com", 'Cookie': self.cookie}
             url = "https://gw.wozaixiaoyuan.com/health/mobile/health/getBatch"
@@ -86,34 +108,14 @@ class User:
         else:
             logging.error("Please log in first!")
             return False
-    
-    def write_jws_to_cache(self, jws_dict):
-        try:
-            with open("users_jws.json", 'r') as file:
-                data = json.load(file)
-        except FileNotFoundError:
-            data = {}
 
-        data.update(jws_dict)
-
-        with open("users_jws.json", 'w') as file:
-            json.dump(data, file)
-
-    def read_jws_from_cache(self):
-        try:
-            with open("users_jws.json", 'r') as file:
-                jws_dict = json.load(file)
-                return jws_dict
-        except FileNotFoundError:
-            return {}
-
-    def test_cached_session(self):
-        cached_jws = self.read_jws_from_cache()
-        if cached_jws:
-            self.cookie = cached_jws.get(self.username)
+    def testCachedSession(self):
+        cachedJWS = readJWS()
+        if cachedJWS:
+            self.cookie = cachedJWS.get(self.username)
             if self.cookie:
                 # Test login status
-                if self.test_login_status():
+                if self.testLoginStatus():
                     return
                 else:
                     logging.error("JWSESSION in local cache expired, re-login...")
@@ -136,7 +138,7 @@ class User:
             else:
                 logging.error("Login failed, please check account password!")
 
-    def get_sign_list(self):
+    def getSignList(self):
         if not self.cookie:
             logging.error("Please log in first!")
             return
@@ -147,29 +149,28 @@ class User:
         data = json.loads(res.text)
 
         if 'code' in data and data['code'] == 0 and 'data' in data:
-            sign_info = signBuilder.filterSignList(data['data']) 
-            logging.debug(sign_info)   
-            self.sign_data =  sign_info
+            signInfo = signBuilder.filterSignList(data['data'])
+            logging.debug(signInfo)
+            self.signData = signInfo
             logging.info("Sign-in list retrieved successfully!")
         else:
             logging.error("Failed to retrieve sign-in list!")
 
-
-    def night_sign(self):
-        self.get_sign_list()
-        if len(self.sign_data) == 0:
+    def nightSign(self):
+        self.getSignList()
+        if len(self.signData) == 0:
             logging.info("No sign-in task found!")
             return
-        for i, sign in  enumerate(self.sign_data):
+        for i, sign in enumerate(self.signData):
             logging.debug(f"Sign-in data: {sign}")
-            check_in_data = self.sign_data[i]['signBody']
-            logging.debug(f"Check-in data: {check_in_data}")
+            checkInData = self.signData[i]['signBody']
+            logging.debug(f"Check-in data: {checkInData}")
             headers = {'Host': "gw.wozaixiaoyuan.com", 'Cookie': self.cookie}
             id_ = sign.get('id')
             sign_id = sign.get('signId')
-            url = self.sign_data[i]['signUrl'].format(id_, self.school_id, sign_id)
+            url = self.signData[i]['signUrl'].format(id_, self.schoolID, sign_id)
             logging.debug(f"Request URL: {url}")
-            res = requests.post(url, headers=headers, data=check_in_data)
+            res = requests.post(url, headers=headers, data=checkInData)
             text = json.loads(res.text)
             if text['code'] == 0:
                 logging.info("sign-in successful!")
@@ -178,7 +179,7 @@ class User:
             logging.debug(f"Response: {text}")
 
 
-def run_users():
+def run():
     """
     Runs the night sign-in for multiple users.
 
@@ -186,17 +187,17 @@ def run_users():
         None
     """
     cfg = Config()
-    data = cfg.get_user_data()
+    data = cfg.getUserData()
 
-    for i, user_data in enumerate(data):
+    for i, user in enumerate(data):
         if i != 0:
             print("-" * 50)  # Separator between different users
-        logging.info(f"Running user {user_data.get('name')}...")
+        logging.info(f"Running user {user.get('name')}...")
         try:
-            u = User(user_data.get('username'), user_data.get('password'), user_data.get('school_id'))
-            u.night_sign()
+            u = User(user.get('username'), user.get('password'), user.get('school_id'))
+            u.nightSign()
         except Exception as e:
-            logging.error(f"An error occurred while running user {user_data.get('name')}: {str(e)}")
+            logging.error(f"An error occurred while running user {user.get('name')}: {str(e)}")
             logging.error(traceback.format_exc())
         if i == len(data) - 1:
             print("-" * 50)
@@ -208,7 +209,7 @@ if __name__ == "__main__":
         # Set the logging level to DEBUG
         logger.setLevel(logging.DEBUG)
         # Run the script
-        run_users()
+        run()
         exit(0)
 
     # Read cron expression from configuration file
@@ -218,12 +219,12 @@ if __name__ == "__main__":
         logging.error(str(e))
         exit(1)
 
-    cronExpression = cfg.get_cron_data()
+    cronExpression = cfg.getCronData()
 
-    now = datetime.now().replace(tzinfo=tz.gettz()) 
+    now = datetime.now().replace(tzinfo=tz.gettz())
 
     # Create a cron iterator
-    cron = croniter(cronExpression,now)
+    cron = croniter(cronExpression, now)
 
     # Log the welcome message
     logging.info("Welcome to Wozaixiaoyuan Night Sign-in Script!")
@@ -243,4 +244,4 @@ if __name__ == "__main__":
             time.sleep(delay)
 
         # Execute the task
-        run_users()
+        run()

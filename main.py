@@ -7,7 +7,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from base64 import b64encode
 import logging
-import toml
+from random import randint
 from croniter import croniter
 import time
 import os
@@ -242,6 +242,7 @@ if __name__ == "__main__":
         # Sleep until the next scheduled time
         if delay > 0:
             time.sleep(delay)
-
+        
+        time.sleep(randint(1, 20))  # Random delay between 1 and 60 seconds to avoid high concurrency
         # Execute the task
         run()

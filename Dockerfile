@@ -17,4 +17,4 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run the script
-CMD ["python", "./wzxy.py"]
+CMD ["python", "./main.py"]

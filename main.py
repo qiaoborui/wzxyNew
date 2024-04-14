@@ -171,13 +171,51 @@ class User:
             url = self.signData[i]['signUrl'].format(id_, self.schoolID, sign_id)
             logging.debug(f"Request URL: {url}")
             res = requests.post(url, headers=headers, data=checkInData)
+            logging.debug(f"Response: {text}")
             text = json.loads(res.text)
             if text['code'] == 0:
                 logging.info("sign-in successful!")
+                return True
             else:
                 logging.error("sign-in failed!")
-            logging.debug(f"Response: {text}")
+                return False
 
+
+def writeToTable(username):
+    """
+    Write the username to the table to indicate that the user has signed in successfully.
+    restore the table when first line is not today
+
+    Args:
+        username (str): The username of the user who has signed in successfully.
+
+    Returns:
+        None
+    """
+    with open('table.txt', 'r') as f:
+        lines = f.readlines()
+        if len(lines) == 0:
+            with open('table.txt', 'a') as f:
+                f.write(str(datetime.now().date()) + '\n')
+        else:
+            if lines[0].strip() != str(datetime.now().date()):
+                with open('table.txt', 'w') as f:
+                    f.write(str(datetime.now().date()) + '\n')
+                
+    #写入用户名
+    with open('table.txt', 'a') as f:
+        f.write(username + '\n')
+
+def readTable():
+    """
+    Read the table to get the list of users who have signed in successfully.
+
+    Returns:
+        list: The list of users who have signed in successfully.
+    """
+    with open('table.txt', 'r') as f:
+        lines = f.readlines()
+        return [line.strip() for line in lines[1:]]
 
 def run():
     """
@@ -188,14 +226,18 @@ def run():
     """
     cfg = Config()
     data = cfg.getUserData()
-
+    signed_users = readTable()
+    data = [user for user in data if user.get('username') not in signed_users]
     for i, user in enumerate(data):
         if i != 0:
             print("-" * 50)  # Separator between different users
         logging.info(f"Running user {user.get('name')}...")
         try:
             u = User(user.get('username'), user.get('password'), user.get('school_id'))
-            u.nightSign()
+            res = u.nightSign()
+            if res:
+                # Write to table
+                writeToTable(user.get('username'))
         except Exception as e:
             logging.error(f"An error occurred while running user {user.get('name')}: {str(e)}")
             logging.error(traceback.format_exc())

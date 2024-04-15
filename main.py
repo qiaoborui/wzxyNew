@@ -192,15 +192,19 @@ def writeToTable(username):
     Returns:
         None
     """
-    with open('table.txt', 'r') as f:
-        lines = f.readlines()
-        if len(lines) == 0:
-            with open('table.txt', 'a') as f:
-                f.write(str(datetime.now().date()) + '\n')
-        else:
-            if lines[0].strip() != str(datetime.now().date()):
-                with open('table.txt', 'w') as f:
+    if not os.path.exists('table.txt'):
+        with open('table.txt', 'w') as f:
+            f.write(str(datetime.now().date()) + '\n')
+    else:
+        with open('table.txt', 'r') as f:
+            lines = f.readlines()
+            if len(lines) == 0:
+                with open('table.txt', 'a') as f:
                     f.write(str(datetime.now().date()) + '\n')
+            else:
+                if lines[0].strip() != str(datetime.now().date()):
+                    with open('table.txt', 'w') as f:
+                        f.write(str(datetime.now().date()) + '\n')
                 
     #写入用户名
     with open('table.txt', 'a') as f:
@@ -213,6 +217,8 @@ def readTable():
     Returns:
         list: The list of users who have signed in successfully.
     """
+    if not os.path.exists('table.txt'):
+        return []
     with open('table.txt', 'r') as f:
         lines = f.readlines()
         return [line.strip() for line in lines[1:]]

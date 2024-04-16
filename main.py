@@ -171,8 +171,8 @@ class User:
             url = self.signData[i]['signUrl'].format(id_, self.schoolID, sign_id)
             logging.debug(f"Request URL: {url}")
             res = requests.post(url, headers=headers, data=checkInData)
-            logging.debug(f"Response: {text}")
             text = json.loads(res.text)
+            logging.debug(f"Response: {text}")
             if text['code'] == 0:
                 logging.info("sign-in successful!")
                 return True

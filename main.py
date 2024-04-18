@@ -217,7 +217,8 @@ def readTable():
     Returns:
         list: The list of users who have signed in successfully.
     """
-    
+    if not os.path.exists('table.txt'):
+        return []
     with open('table.txt', 'r') as f:
         lines = f.readlines()
         if len(lines) == 0:

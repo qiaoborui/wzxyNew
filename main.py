@@ -217,6 +217,15 @@ def readTable():
     Returns:
         list: The list of users who have signed in successfully.
     """
+    
+    with open('table.txt', 'r') as f:
+        lines = f.readlines()
+        if len(lines) == 0:
+            return []
+        if lines[0].strip() != str(datetime.now().date()):
+            with open('table.txt', 'w') as f:
+                f.write(str(datetime.now().date()) + '\n')
+            return []
     if not os.path.exists('table.txt'):
         return []
     with open('table.txt', 'r') as f:

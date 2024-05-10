@@ -85,14 +85,17 @@ class User:
         text = json.loads(loginReq.text)
         if text['code'] == 0:
             set_cookie = loginReq.headers['Set-Cookie']
-            jws = re.search(r'JWSESSION=.*?;', str(set_cookie)).group(0)
+            match = re.search(r'JWSESSION=.*?;', str(set_cookie))
+            if match is None:
+                logging.error("Login failed, JWSESSION not found in response!")
+                return False
+            jws = match.group(0)
             self.cookie = jws
             writeJWS({self.username: jws})  # Write obtained JWSESSION to local cache
             return True
         else:
             logging.error(f"{self.username} login error, please check account password!")
             return False
-
     def testLoginStatus(self):
         if self.cookie:
             headers = {'Host': "gw.wozaixiaoyuan.com", 'Cookie': self.cookie}
@@ -205,7 +208,7 @@ def writeToTable(username):
                 if lines[0].strip() != str(datetime.now().date()):
                     with open('table.txt', 'w') as f:
                         f.write(str(datetime.now().date()) + '\n')
-                
+
     #写入用户名
     with open('table.txt', 'a') as f:
         f.write(username + '\n')
@@ -300,7 +303,7 @@ if __name__ == "__main__":
         # Sleep until the next scheduled time
         if delay > 0:
             time.sleep(delay)
-        
+
         time.sleep(randint(1, 20))  # Random delay between 1 and 60 seconds to avoid high concurrency
         # Execute the task
         run()

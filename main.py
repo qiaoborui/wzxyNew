@@ -9,6 +9,7 @@ import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import signBuilder
+import os
 
 # Create a logger
 logger = logging.getLogger()
@@ -160,4 +161,4 @@ def location_signin():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, port=os.getenv("PORT", default=5000), host='0.0.0.0')

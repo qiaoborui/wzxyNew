@@ -16,5 +16,7 @@ COPY . .
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+EXPOSE 5000
+
 # Run the script
 CMD ["python", "./main.py"]

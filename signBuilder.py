@@ -1,28 +1,28 @@
 import json
 import logging
-import config
 
 signTypeTable = {
     1: {
-        "name": "AreaSign",
-        "url": "https://gw.wozaixiaoyuan.com/sign/mobile/receive/doSignByArea?id={}&schoolId={}&signId={}"
-    },
-    2: {
         "name": "LocationSign",
         "url": "https://gw.wozaixiaoyuan.com/sign/mobile/receive/doSignByLocation?id={}&schoolId={}&signId={}"
+    },
+    2: {
+        "name": "AreaSign",
+        "url": "https://gw.wozaixiaoyuan.com/sign/mobile/receive/doSignByArea?id={}&schoolId={}&signId={}"
     }
 }
 
-
 class SignBuilder:
     @staticmethod
-    def buildSignBody(signMode, data):
-        if signMode == 1:
-            logging.debug("Building sign body for mode 1")
+    def buildSignBody(signMode, data, location_info=None):
+        if signMode == 1:  # Location sign
+            logging.debug("Building sign body for location mode")
             return SignBuilder.buildLocationSignBody(data)
-        elif signMode == 2:
-            logging.debug("Building sign body for mode 2")
-            return SignBuilder.buildAreaSignBody(data)
+        elif signMode == 2:  # Area sign
+            logging.debug("Building sign body for area mode")
+            if not location_info:
+                raise ValueError("Location info is required for area sign")
+            return SignBuilder.buildAreaSignBody(location_info)
         else:
             raise ValueError("Unknown sign mode")
 
@@ -60,42 +60,34 @@ class SignBuilder:
         return None
 
     @staticmethod
-    def buildAreaSignBody(data):
-        cfg = config.Config()
-        phone = data['phone']
-        user = next((item for item in cfg.getUserData() if item['username'] == phone), None)
-        if user is None:
-            raise ValueError("User not found")
-        longitude = user['longitude']
-        latitude = user['latitude']
-        province = user['province']
-        city = user['city']
-        township = user['township']
-        area = user['area']
+    def buildAreaSignBody(location_info):
         signBody = {
-            "longitude": longitude,
-            "latitude": latitude,
-            "province": province,
-            "city": city,
-            "district": area,
-            "township": township,
+            "longitude": location_info['longitude'],
+            "latitude": location_info['latitude'],
+            "province": location_info['province'],
+            "city": location_info['city'],
+            "district": location_info['area'],
+            "township": location_info['township'],
         }
         return json.dumps(signBody)
 
-
-def filterSignList(json_array):
+def filterSignList(json_array, location_info=None):
     validSigns = []
     for item in json_array:
         if item.get('type') == 0 and item.get('signStatus') == 1:
             signMode = item.get('signMode')
-            signBody = SignBuilder.buildSignBody(signMode, item)
-            signURL = signTypeTable.get(signMode).get('url')
-            validSigns.append({
-                "signMode": signMode,
-                "signBody": signBody,
-                "signUrl": signURL,
-                "signId": item.get('signId'),
-                "id": item.get('id'),
-            })
-            logging.debug(f"Added valid sign: {signMode}")
+            try:
+                signBody = SignBuilder.buildSignBody(signMode, item, location_info)
+                signURL = signTypeTable.get(signMode).get('url')
+                validSigns.append({
+                    "signMode": signMode,
+                    "signBody": signBody,
+                    "signUrl": signURL,
+                    "signId": item.get('signId'),
+                    "id": item.get('id'),
+                })
+                logging.debug(f"Added valid sign: {signMode}")
+            except ValueError as e:
+                logging.warning(f"Skipping sign due to: {str(e)}")
+                continue
     return validSigns

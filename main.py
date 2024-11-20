@@ -7,6 +7,7 @@ from Crypto.Util.Padding import pad
 from base64 import b64encode
 import logging
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import signBuilder
 
 # Create a logger
@@ -24,6 +25,7 @@ consoleHandler.setFormatter(formatter)
 logger.addHandler(consoleHandler)
 
 app = Flask(__name__)
+CORS(app)
 
 class User:
     def __init__(self, username, password, school_id):

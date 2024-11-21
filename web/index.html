@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我在校园签到助手</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 10px;
+        background-color: #f5f5f5;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 10px 0;
+        text-align: center;
+        color: #333;
+      }
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+      .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .form-group {
+        flex: 1;
+        margin-bottom: 10px;
+      }
+      label {
+        display: block;
+        margin-bottom: 4px;
+        color: #555;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+      }
+      input:focus {
+        border-color: #4caf50;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+      }
+      .tab-container {
+        display: flex;
+        margin-bottom: 15px;
+        background: white;
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .tab {
+        flex: 1;
+        background-color: #f8f8f8;
+        color: #666;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 0 5px;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+      }
+      .tab.active {
+        background-color: #4caf50;
+        color: white;
+        box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+      }
+      .submit-btn {
+        width: 100%;
+        margin-top: 15px;
+        padding: 10px;
+        font-size: 1rem;
+        font-weight: 500;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+      }
+      .submit-btn:hover {
+        background-color: #45a049;
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+      }
+      #result {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 6px;
+        font-weight: 500;
+      }
+      .success {
+        background-color: #dff0d8;
+        color: #3c763d;
+      }
+      .error {
+        background-color: #f2dede;
+        color: #a94442;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>我在校园签到助手</h1>
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username">用户名:</label>
+          <input type="text" id="username" required />
+        </div>
+        <div class="form-group">
+          <label for="password">密码:</label>
+          <input type="password" id="password" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="school_id">学校ID:</label>
+        <input type="text" id="school_id" required />
+      </div>
+    </div>
+
+    <div class="tab-container">
+      <button class="tab active" data-type="location">位置签到</button>
+      <button class="tab" data-type="area">区域签到</button>
+    </div>
+
+    <div class="card" id="location-inputs" style="display: none">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="longitude">经度:</label>
+          <input type="text" id="longitude" placeholder="116.123456" />
+        </div>
+        <div class="form-group">
+          <label for="latitude">纬度:</label>
+          <input type="text" id="latitude" placeholder="39.123456" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="province">省份:</label>
+          <input type="text" id="province" placeholder="北京市" />
+        </div>
+        <div class="form-group">
+          <label for="city">城市:</label>
+          <input type="text" id="city" placeholder="北京市" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="area">区域:</label>
+        <input type="text" id="area" placeholder="例如: 海淀区" />
+      </div>
+      <div class="form-group">
+        <label for="township">街道:</label>
+        <input type="text" id="township" placeholder="例如: 中关村街道" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <button class="submit-btn" onclick="signin()">提交签到</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+      let currentType = "location";
+      const API_BASE_URL = "";
+
+      function toggleLocationInputs(type) {
+        currentType = type;
+        const locationInputs = document.getElementById("location-inputs");
+        locationInputs.style.display = type === "area" ? "block" : "none";
+      }
+
+      // 页面加载时加载保存的数据
+      window.addEventListener("load", function () {
+        const savedData = JSON.parse(localStorage.getItem("wzxyData") || "{}");
+        if (savedData.username)
+          document.getElementById("username").value = savedData.username;
+        if (savedData.password)
+          document.getElementById("password").value = savedData.password;
+        if (savedData.school_id)
+          document.getElementById("school_id").value = savedData.school_id;
+      });
+
+      async function signin() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const school_id = document.getElementById("school_id").value;
+
+        if (!username || !password || !school_id) {
+          showResult("请填写所有必填字段", false);
+          return;
+        }
+
+        // 保存数据到本地存储
+        localStorage.setItem(
+          "wzxyData",
+          JSON.stringify({
+            username,
+            password,
+            school_id,
+          })
+        );
+
+        const data = {
+          username: username,
+          password: password,
+          school_id: school_id,
+        };
+
+        if (currentType === "area") {
+          const locationFields = [
+            "longitude",
+            "latitude",
+            "province",
+            "city",
+            "area",
+            "township",
+          ];
+          const locationData = {};
+
+          for (const field of locationFields) {
+            const value = document.getElementById(field).value;
+            if (!value) {
+              showResult(`请填写${field}字段`, false);
+              return;
+            }
+            locationData[field] = value;
+          }
+
+          locationData.longitude = parseFloat(locationData.longitude);
+          locationData.latitude = parseFloat(locationData.latitude);
+
+          Object.assign(data, locationData);
+        }
+
+        try {
+          const endpoint = `${API_BASE_URL}/api/${
+            currentType === "location" ? "locationSignin" : "areaSignin"
+          }`;
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showResult(result.message, true);
+          } else {
+            showResult(result.message || result.error || "签到失败", false);
+          }
+        } catch (error) {
+          showResult("请求失败: " + error.message, false);
+        }
+      }
+
+      function showResult(message, isSuccess) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.textContent = message;
+        resultDiv.className = isSuccess ? "success" : "error";
+      }
+
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.addEventListener("click", function () {
+          document
+            .querySelectorAll(".tab")
+            .forEach((t) => t.classList.remove("active"));
+          this.classList.add("active");
+          const type = this.dataset.type;
+          toggleLocationInputs(type);
+        });
+      });
+    </script>
+  </body>
+</html>

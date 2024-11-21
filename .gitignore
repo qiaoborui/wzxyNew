@@ -6,3 +6,4 @@ config.toml
 .DS_Store
 __pycache__
 pyrightconfig.json
+.vercel

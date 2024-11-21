@@ -67,7 +67,7 @@ class User:
             logging.error(f"{self.username} login error, please check account password!")
             return False
 
-    def getSignList(self):
+    def getSignList(self, location_info=None):
         if not self.cookie:
             logging.error("Please log in first!")
             return []
@@ -78,16 +78,6 @@ class User:
         data = json.loads(res.text)
 
         if 'code' in data and data['code'] == 0 and 'data' in data:
-            # Get location info from request data for area sign
-            location_info = {
-                'longitude': request.json.get('longitude'),
-                'latitude': request.json.get('latitude'),
-                'province': request.json.get('province'),
-                'city': request.json.get('city'),
-                'area': request.json.get('area'),
-                'township': request.json.get('township')
-            } if request.json else None
-            
             signInfo = signBuilder.filterSignList(data['data'], location_info)
             logging.debug(signInfo)
             return signInfo
@@ -112,8 +102,18 @@ def area_signin():
         if not all(field in data for field in required_fields):
             return jsonify({'error': 'Missing required fields'}), 400
 
+        # Extract location info from request
+        location_info = {
+            'longitude': data.get('longitude'),
+            'latitude': data.get('latitude'),
+            'province': data.get('province'),
+            'city': data.get('city'),
+            'area': data.get('area'),
+            'township': data.get('township')
+        }
+
         user = User(data['username'], data['password'], data['school_id'])
-        sign_list = user.getSignList()
+        sign_list = user.getSignList(location_info)
         
         if not sign_list:
             return jsonify({'message': 'No sign-in task found'}), 404

@@ -80,6 +80,7 @@
         box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
       }
       .submit-btn {
+        position: relative;
         width: 100%;
         margin-top: 15px;
         padding: 10px;
@@ -96,6 +97,28 @@
       .submit-btn:hover {
         background-color: #45a049;
         box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+      }
+      .submit-btn.loading {
+        background-color: #45a049;
+        pointer-events: none;
+      }
+      .submit-btn.loading::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin: -10px 0 0 -10px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
       #result {
         margin-top: 20px;
@@ -195,6 +218,13 @@
       });
 
       async function signin() {
+        const submitBtn = document.querySelector(".submit-btn");
+        const originalText = submitBtn.textContent;
+
+        // Add loading state
+        submitBtn.classList.add("loading");
+        submitBtn.textContent = "签到中...";
+
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
         const school_id = document.getElementById("school_id").value;
@@ -267,6 +297,10 @@
           }
         } catch (error) {
           showResult("请求失败: " + error.message, false);
+        } finally {
+          // Remove loading state
+          submitBtn.classList.remove("loading");
+          submitBtn.textContent = originalText;
         }
       }
 
